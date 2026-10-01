@@ -19,6 +19,10 @@
   visibility: hidden;   /* revealed once the script face is applied */
   font-family: 'Webgency', Georgia, serif;
   font-weight: 800;
+  /* Beau Rivage is a script face; a synthesised bold smears it, which
+     reads as skewed. Better to show nothing than a faked weight. */
+  font-synthesis: none;
+  -webkit-font-synthesis: none;
   font-size: 54px;
   line-height: 1;
   color: #B48C3D;
@@ -139,6 +143,7 @@ document.addEventListener('DOMContentLoaded',t_setvisRecs);}})();</script></head
 
 #weiVideoWrap.wei-video-in {
   opacity: 1;
+  transition: none;     /* instant: a crossfade here exposes the page */
   pointer-events: all;
 }
 
@@ -240,9 +245,13 @@ document.addEventListener('DOMContentLoaded',t_setvisRecs);}})();</script></head
   // the cover's fonts, so the label does not reflow after the reveal
   var mark = document.getElementById('weiLoaderMark');
   function showMark() { if (mark) mark.style.visibility = 'visible'; }
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(function () { showMark(); step(); })
-                        .catch(function () { showMark(); step(); });
+  if (document.fonts && document.fonts.load) {
+    // fonts.ready can settle before this particular face is applied,
+    // and the monogram is the one piece of type on the screen.
+    document.fonts.load('800 54px Webgency')
+      .then(function () { showMark(); })
+      .catch(function () { showMark(); });
+    document.fonts.ready.then(step).catch(step);
   } else { showMark(); step(); }
   // if fonts stall, the monogram should still turn up rather than never
   setTimeout(showMark, 2500);
